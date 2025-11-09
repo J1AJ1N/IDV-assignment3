@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://d3js.org; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://d3js.org; style-src 'self' 'unsafe-inline';">
   <title>Cross Validation Accuracy Chart</title>
-  <!-- 引入d3.js库 -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
@@ -14,9 +12,13 @@
       min-height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
+      background: #f5f5f5;
     }
     #chart-container {
-      text-align: center;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     .editable-label {
       cursor: pointer;
@@ -30,214 +32,211 @@
 </head>
 <body>
   <div id="chart-container">
-    <script>
-      // 1. 定义数据
-      const data = [
-        { model: "BERT", values: [74.4, 64.8] },
-        { model: "RoBERTa", values: [81.9, 65.5] },
-        { model: "BART", values: [73.1, 63.5] }
-      ];
+    <h3 style="text-align: center; margin-bottom: 20px; color: #333;">Cross Validation Accuracy (%)</h3>
+  </div>
 
-      // 2. 设置画布尺寸与边距
-      const margin = { top: 80, right: 20, bottom: 40, left: 40 }; // 增加顶部边距
-      const width = 600 - margin.left - margin.right;
-      const height = 400 - margin.top - margin.bottom;
+  <script>
+    // 等待页面加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      createChart();
+    });
 
-      // 3. 创建SVG容器
-      const svg = d3.select("#chart-container")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    function createChart() {
+      try {
+        // 1. 定义数据
+        const data = [
+          { model: "BERT", values: [74.4, 64.8] },
+          { model: "RoBERTa", values: [81.9, 65.5] },
+          { model: "BART", values: [73.1, 63.5] }
+        ];
 
-      // 4. 定义比例尺
-      // X轴：模型名称（分块比例尺）
-      const x = d3.scaleBand()
-        .domain(data.map(d => d.model))
-        .range([0, width])
-        .padding(0.4); // 柱子之间的间距
+        // 2. 设置画布尺寸与边距
+        const margin = { top: 60, right: 20, bottom: 40, left: 40 };
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
 
-      // Y轴：准确率（线性比例尺，0-100）
-      const y = d3.scaleLinear()
-        .domain([0, 100])
-        .range([height, 0]); // 注意d3中y轴默认向下增长，需反转
+        // 3. 创建SVG容器
+        const svg = d3.select("#chart-container")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      // 5. 绘制坐标轴
-      svg.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x)); // 底部X轴
+        // 4. 定义比例尺
+        const x = d3.scaleBand()
+          .domain(data.map(d => d.model))
+          .range([0, width])
+          .padding(0.4);
 
-      svg.append("g")
-        .call(d3.axisLeft(y)); // 左侧Y轴
+        const y = d3.scaleLinear()
+          .domain([0, 100])
+          .range([height, 0]);
 
-      // 6. 绘制标题 - 位置调整到更上方
-      svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", -40) // 调整到更上方
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text("Cross Validation Accuracy (%)");
+        // 5. 绘制坐标轴
+        svg.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
 
-      // 7. 绘制**实心柱子**（对应每个模型的第一个数值）
-      const solidBars = svg.selectAll(".solid-bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "solid-bar")
-        .attr("x", d => x(d.model) + x.bandwidth() * 0.1) // 调整柱子水平位置
-        .attr("y", d => y(d.values[0])) // 柱子顶部Y坐标
-        .attr("width", x.bandwidth() * 0.35) // 柱子宽度
-        .attr("height", d => height - y(d.values[0])) // 柱子高度（从Y坐标到底部的距离）
-        .attr("fill", "#f7c17b"); // 实心柱颜色
+        svg.append("g")
+          .call(d3.axisLeft(y));
 
-      // 8. 绘制**虚线柱子**（对应每个模型的第二个数值）
-      const dashedBars = svg.selectAll(".dashed-bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "dashed-bar")
-        .attr("x", d => x(d.model) + x.bandwidth() * 0.55) // 调整虚线柱水平位置
-        .attr("y", d => y(d.values[1]))
-        .attr("width", x.bandwidth() * 0.35)
-        .attr("height", d => height - y(d.values[1]))
-        .attr("fill", "none") // 无填充，仅用边框
-        .attr("stroke", "#f7d78b") // 虚线颜色
-        .attr("stroke-dasharray", "5,3"); // 虚线样式（线段长度5，间隔3）
+        // 6. 绘制实心柱子
+        const solidBars = svg.selectAll(".solid-bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("class", "solid-bar")
+          .attr("x", d => x(d.model) + x.bandwidth() * 0.1)
+          .attr("y", d => y(d.values[0]))
+          .attr("width", x.bandwidth() * 0.35)
+          .attr("height", d => height - y(d.values[0]))
+          .attr("fill", "#f7c17b");
 
-      // 9. 为实心柱添加数值标签
-      const solidLabels = svg.selectAll(".solid-label")
-        .data(data)
-        .enter()
-        .append("text")
-        .attr("class", "solid-label editable-label")
-        .attr("x", d => x(d.model) + x.bandwidth() * 0.1 + (x.bandwidth() * 0.35)/2) // 水平居中
-        .attr("y", d => y(d.values[0]) - 5) // 柱子顶部上方5px
-        .attr("text-anchor", "middle")
-        .text(d => d.values[0])
-        .on("click", function(event, d) {
-          editValue(this, d, 0);
-        });
+        // 7. 绘制虚线柱子
+        const dashedBars = svg.selectAll(".dashed-bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("class", "dashed-bar")
+          .attr("x", d => x(d.model) + x.bandwidth() * 0.55)
+          .attr("y", d => y(d.values[1]))
+          .attr("width", x.bandwidth() * 0.35)
+          .attr("height", d => height - y(d.values[1]))
+          .attr("fill", "none")
+          .attr("stroke", "#f7d78b")
+          .attr("stroke-dasharray", "5,3");
 
-      // 10. 为虚线柱添加数值标签
-      const dashedLabels = svg.selectAll(".dashed-label")
-        .data(data)
-        .enter()
-        .append("text")
-        .attr("class", "dashed-label editable-label")
-        .attr("x", d => x(d.model) + x.bandwidth() * 0.55 + (x.bandwidth() * 0.35)/2) // 水平居中
-        .attr("y", d => y(d.values[1]) - 5) // 柱子顶部上方5px
-        .attr("text-anchor", "middle")
-        .text(d => d.values[1])
-        .on("click", function(event, d) {
-          editValue(this, d, 1);
-        });
+        // 8. 添加数值标签
+        const solidLabels = svg.selectAll(".solid-label")
+          .data(data)
+          .enter()
+          .append("text")
+          .attr("class", "solid-label editable-label")
+          .attr("x", d => x(d.model) + x.bandwidth() * 0.1 + (x.bandwidth() * 0.35)/2)
+          .attr("y", d => y(d.values[0]) - 5)
+          .attr("text-anchor", "middle")
+          .text(d => d.values[0])
+          .on("click", function(event, d) {
+            editValue(this, d, 0, solidBars, dashedBars, y, height);
+          });
 
-      // 11. 添加图例 - 位置调整到标题下方
-      const legend = svg.append("g")
-        .attr("transform", `translate(${width/2 - 80}, -15)`); // 调整到标题下方
+        const dashedLabels = svg.selectAll(".dashed-label")
+          .data(data)
+          .enter()
+          .append("text")
+          .attr("class", "dashed-label editable-label")
+          .attr("x", d => x(d.model) + x.bandwidth() * 0.55 + (x.bandwidth() * 0.35)/2)
+          .attr("y", d => y(d.values[1]) - 5)
+          .attr("text-anchor", "middle")
+          .text(d => d.values[1])
+          .on("click", function(event, d) {
+            editValue(this, d, 1, solidBars, dashedBars, y, height);
+          });
 
-      legend.append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", "#f7c17b");
+        // 9. 添加图例
+        const legend = svg.append("g")
+          .attr("transform", `translate(${width/2 - 80}, -30)`);
 
-      legend.append("text")
-        .attr("x", 20)
-        .attr("y", 12)
-        .text("First Value")
-        .style("font-size", "12px");
+        legend.append("rect")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", 15)
+          .attr("height", 15)
+          .attr("fill", "#f7c17b");
 
-      legend.append("rect")
-        .attr("x", 100)
-        .attr("y", 0)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", "none")
-        .attr("stroke", "#f7d78b")
-        .attr("stroke-dasharray", "5,3");
+        legend.append("text")
+          .attr("x", 20)
+          .attr("y", 12)
+          .text("First Value")
+          .style("font-size", "12px");
 
-      legend.append("text")
-        .attr("x", 120)
-        .attr("y", 12)
-        .text("Second Value")
-        .style("font-size", "12px");
+        legend.append("rect")
+          .attr("x", 100)
+          .attr("y", 0)
+          .attr("width", 15)
+          .attr("height", 15)
+          .attr("fill", "none")
+          .attr("stroke", "#f7d78b")
+          .attr("stroke-dasharray", "5,3");
 
-      // 12. 编辑数值的函数
-      function editValue(element, d, index) {
-        const currentValue = d.values[index];
-        const input = document.createElement("input");
-        input.type = "number";
-        input.value = currentValue;
-        input.style.position = "absolute";
-        input.style.width = "50px";
-        input.style.textAlign = "center";
-        input.style.zIndex = "1000";
-        input.style.backgroundColor = "white";
-        input.style.border = "2px solid #3498db";
-        input.style.borderRadius = "3px";
-        input.style.padding = "2px";
-        
-        // 定位输入框
-        const bbox = element.getBBox();
-        const svgRect = svg.node().getBoundingClientRect();
-        input.style.left = (svgRect.left + bbox.x + bbox.width/2 - 25) + "px";
-        input.style.top = (svgRect.top + bbox.y - 5) + "px";
-        
-        document.body.appendChild(input);
-        input.focus();
-        input.select();
-        
-        // 处理输入完成
-        function handleInput() {
-          const newValue = parseFloat(input.value);
-          if (!isNaN(newValue) && newValue >= 0 && newValue <= 100) {
-            // 更新数据
-            d.values[index] = newValue;
-            
-            // 更新柱子
-            if (index === 0) {
-              solidBars.filter(bar => bar.model === d.model)
-                .transition()
-                .duration(500)
-                .attr("y", y(newValue))
-                .attr("height", height - y(newValue));
-            } else {
-              dashedBars.filter(bar => bar.model === d.model)
-                .transition()
-                .duration(500)
-                .attr("y", y(newValue))
-                .attr("height", height - y(newValue));
-            }
-            
-            // 更新标签
-            d3.select(element)
-              .text(newValue.toFixed(1))
-              .attr("y", y(newValue) - 5);
+        legend.append("text")
+          .attr("x", 120)
+          .attr("y", 12)
+          .text("Second Value")
+          .style("font-size", "12px");
+
+      } catch (error) {
+        console.error('Chart creation error:', error);
+        document.getElementById('chart-container').innerHTML = 
+          '<p style="color: red; text-align: center;">图表加载失败: ' + error.message + '</p>';
+      }
+    }
+
+    function editValue(element, d, index, solidBars, dashedBars, y, height) {
+      const currentValue = d.values[index];
+      const input = document.createElement("input");
+      input.type = "number";
+      input.value = currentValue;
+      input.style.position = "fixed";
+      input.style.width = "60px";
+      input.style.textAlign = "center";
+      input.style.zIndex = "1000";
+      input.style.backgroundColor = "white";
+      input.style.border = "2px solid #3498db";
+      input.style.borderRadius = "3px";
+      input.style.padding = "5px";
+      input.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+      
+      // 简单定位在屏幕中央
+      input.style.left = "50%";
+      input.style.top = "50%";
+      input.style.transform = "translate(-50%, -50%)";
+      
+      document.body.appendChild(input);
+      input.focus();
+      input.select();
+      
+      function handleInput() {
+        const newValue = parseFloat(input.value);
+        if (!isNaN(newValue) && newValue >= 0 && newValue <= 100) {
+          d.values[index] = newValue;
+          
+          if (index === 0) {
+            solidBars.filter(bar => bar.model === d.model)
+              .transition()
+              .duration(500)
+              .attr("y", y(newValue))
+              .attr("height", height - y(newValue));
+          } else {
+            dashedBars.filter(bar => bar.model === d.model)
+              .transition()
+              .duration(500)
+              .attr("y", y(newValue))
+              .attr("height", height - y(newValue));
           }
           
-          // 移除输入框
+          d3.select(element)
+            .text(newValue.toFixed(1))
+            .attr("y", y(newValue) - 5);
+        }
+        
+        document.body.removeChild(input);
+        document.removeEventListener("keydown", handleKeyDown);
+      }
+      
+      function handleKeyDown(e) {
+        if (e.key === "Enter") {
+          handleInput();
+        } else if (e.key === "Escape") {
           document.body.removeChild(input);
           document.removeEventListener("keydown", handleKeyDown);
         }
-        
-        // 处理键盘事件
-        function handleKeyDown(e) {
-          if (e.key === "Enter") {
-            handleInput();
-          } else if (e.key === "Escape") {
-            document.body.removeChild(input);
-            document.removeEventListener("keydown", handleKeyDown);
-          }
-        }
-        
-        input.addEventListener("blur", handleInput);
-        document.addEventListener("keydown", handleKeyDown);
       }
-    </script>
-  </div>
+      
+      input.addEventListener("blur", handleInput);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+  </script>
 </body>
 </html>
