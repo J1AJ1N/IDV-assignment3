@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可交互平行四边形网格</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+        .arrow {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+        .arrow:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        .info {
+            text-align: center;
+            margin-top: 15px;
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <svg width="600" height="600" viewBox="-7.5 -7.5 15 15" xmlns="http://www.w3.org/2000/svg">
+            <!-- 绘制网格 -->
+            <defs>
+                <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
+                    <path d="M 1 0 L 0 0 0 1" fill="none" stroke="#e0e0e0" stroke-width="0.015"/>
+                </pattern>
+            </defs>
+            <rect id="grid-bg" x="-7.5" y="-7.5" width="15" height="15" fill="url(#grid)" />
+            
+            <!-- 平行四边形 -->
+            <polygon id="parallelogram" points="0,0 -3,0 -1,-2 2,-2" fill="none" stroke="#333" stroke-width="0.04" />
+            
+            <!-- 虚线箭头 e3->e1 -->
+            <line id="arrow1" x1="-1" y1="-2" x2="0" y2="0" stroke="#00bcd4" stroke-width="0.035" 
+                  stroke-dasharray="0.2,0.1" marker-end="url(#arrow-cyan)" />
+            
+            <!-- 虚线箭头 e4->e2 -->
+            <line id="arrow2" x1="2" y1="-2" x2="-3" y2="0" stroke="#1565c0" stroke-width="0.035" 
+                  stroke-dasharray="0.2,0.1" marker-end="url(#arrow-darkblue)" />
+            
+            <!-- 定义箭头标记 -->
+            <defs>
+                <marker id="arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L7,3 z" fill="#00bcd4" />
+                </marker>
+                <marker id="arrow-darkblue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L7,3 z" fill="#1565c0" />
+                </marker>
+            </defs>
+            
+            <!-- 点 e1 -->
+            <g id="e1-group" transform="translate(0, 0)">
+                <circle r="0.12" fill="#e53935" opacity="0.9" />
+                <text x="0" y="0.45" font-size="0.6" text-anchor="middle" fill="#e53935" font-weight="bold">e₁</text>
+                <!-- 方向箭头 - 使用↑↓←→符号 -->
+                <text class="arrow" x="0" y="-0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e1', 0, -1)">↑</text>
+                <text class="arrow" x="0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e1', 1, 0)">→</text>
+                <text class="arrow" x="0" y="0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e1', 0, 1)">↓</text>
+                <text class="arrow" x="-0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e1', -1, 0)">←</text>
+            </g>
+            
+            <!-- 点 e2 -->
+            <g id="e2-group" transform="translate(-3, 0)">
+                <circle r="0.12" fill="#e53935" opacity="0.9" />
+                <text x="0" y="0.45" font-size="0.6" text-anchor="middle" fill="#e53935" font-weight="bold">e₂</text>
+                <!-- 方向箭头 - 使用↑↓←→符号 -->
+                <text class="arrow" x="0" y="-0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e2', 0, -1)">↑</text>
+                <text class="arrow" x="0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e2', 1, 0)">→</text>
+                <text class="arrow" x="0" y="0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e2', 0, 1)">↓</text>
+                <text class="arrow" x="-0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e2', -1, 0)">←</text>
+            </g>
+            
+            <!-- 点 e3 -->
+            <g id="e3-group" transform="translate(-1, -2)">
+                <circle r="0.12" fill="#e53935" opacity="0.9" />
+                <text x="0" y="-0.55" font-size="0.6" text-anchor="middle" fill="#e53935" font-weight="bold">e₃</text>
+                <!-- 方向箭头 - 使用↑↓←→符号 -->
+                <text class="arrow" x="0" y="-0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e3', 0, -1)">↑</text>
+                <text class="arrow" x="0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e3', 1, 0)">→</text>
+                <text class="arrow" x="0" y="0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e3', 0, 1)">↓</text>
+                <text class="arrow" x="-0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e3', -1, 0)">←</text>
+            </g>
+            
+            <!-- 点 e4 -->
+            <g id="e4-group" transform="translate(2, -2)">
+                <circle r="0.12" fill="#e53935" opacity="0.9" />
+                <text x="0" y="-0.55" font-size="0.6" text-anchor="middle" fill="#e53935" font-weight="bold">e₄</text>
+                <!-- 方向箭头 - 使用↑↓←→符号 -->
+                <text class="arrow" x="0" y="-0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e4', 0, -1)">↑</text>
+                <text class="arrow" x="0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e4', 1, 0)">→</text>
+                <text class="arrow" x="0" y="0.45" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e4', 0, 1)">↓</text>
+                <text class="arrow" x="-0.45" y="0" font-size="0.8" text-anchor="middle" fill="#2196F3" onclick="movePoint('e4', -1, 0)">←</text>
+            </g>
+        </svg>
+        <div class="info">点击箭头移动点，每次移动一个格子</div>
+    </div>
+
+    <script>
+        // 当前点位置
+        const positions = {
+            e1: { x: 0, y: 0 },
+            e2: { x: -3, y: 0 },
+            e3: { x: -1, y: -2 },
+            e4: { x: 2, y: -2 }
+        };
+        
+        // 网格边界
+        const gridMin = -7;
+        const gridMax = 6; // 稍微小一点，为标签留出空间
+        
+        // 移动点函数
+        function movePoint(pointId, dx, dy) {
+            const newX = positions[pointId].x + dx;
+            const newY = positions[pointId].y + dy;
+            
+            // 检查边界
+            if (newX >= gridMin && newX <= gridMax && newY >= gridMin && newY <= gridMax) {
+                positions[pointId].x = newX;
+                positions[pointId].y = newY;
+                updateShapes();
+            }
+        }
+        
+        // 更新所有图形
+        function updateShapes() {
+            // 更新平行四边形
+            const parallelogram = document.getElementById('parallelogram');
+            parallelogram.setAttribute('points', 
+                `${positions.e1.x},${positions.e1.y} ` +
+                `${positions.e2.x},${positions.e2.y} ` +
+                `${positions.e3.x},${positions.e3.y} ` +
+                `${positions.e4.x},${positions.e4.y}`
+            );
+            
+            // 更新箭头
+            const arrow1 = document.getElementById('arrow1');
+            arrow1.setAttribute('x1', positions.e3.x);
+            arrow1.setAttribute('y1', positions.e3.y);
+            arrow1.setAttribute('x2', positions.e1.x);
+            arrow1.setAttribute('y2', positions.e1.y);
+            
+            const arrow2 = document.getElementById('arrow2');
+            arrow2.setAttribute('x1', positions.e4.x);
+            arrow2.setAttribute('y1', positions.e4.y);
+            arrow2.setAttribute('x2', positions.e2.x);
+            arrow2.setAttribute('y2', positions.e2.y);
+            
+            // 更新点位置
+            document.getElementById('e1-group').setAttribute('transform', `translate(${positions.e1.x}, ${positions.e1.y})`);
+            document.getElementById('e2-group').setAttribute('transform', `translate(${positions.e2.x}, ${positions.e2.y})`);
+            document.getElementById('e3-group').setAttribute('transform', `translate(${positions.e3.x}, ${positions.e3.y})`);
+            document.getElementById('e4-group').setAttribute('transform', `translate(${positions.e4.x}, ${positions.e4.y})`);
+        }
+        
+        // 初始更新
+        updateShapes();
+    </script>
+</body>
+</html>

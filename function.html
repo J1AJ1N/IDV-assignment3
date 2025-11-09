@@ -1,0 +1,108 @@
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg">
+  <!-- 定义阴影滤镜 -->
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+    <feOffset dx="1" dy="1" result="offsetblur" />
+    <feComponentTransfer>
+      <feFuncA type="linear" slope="0.3" />
+    </feComponentTransfer>
+    <feMerge>
+      <feMergeNode />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+
+  <!-- 网格线 -->
+  <g stroke="#eee" stroke-width="1">
+    <line x1="50" x2="450" y1="50" y2="50" />
+    <line x1="50" x2="450" y1="100" y2="100" />
+    <line x1="50" x2="450" y1="150" y2="150" />
+    <line x1="50" x2="450" y1="200" y2="200" />
+    <line x1="50" x2="450" y1="250" y2="250" />
+    <line x1="50" x2="450" y1="300" y2="300" />
+    <line x1="100" x2="100" y1="50" y2="300" />
+    <line x1="150" x2="150" y1="50" y2="300" />
+    <line x1="200" x2="200" y1="50" y2="300" />
+    <line x1="250" x2="250" y1="50" y2="300" />
+    <line x1="300" x2="300" y1="50" y2="300" />
+    <line x1="350" x2="350" y1="50" y2="300" />
+    <line x1="400" x2="400" y1="50" y2="300" />
+  </g>
+
+  <!-- 坐标轴 -->
+  <g stroke="black" stroke-width="2">
+    <line x1="50" x2="450" y1="300" y2="300" />
+    <line x1="50" x2="50" y1="50" y2="300" />
+  </g>
+
+  <!-- 坐标轴刻度与标签 -->
+  <g font-family="Arial" font-size="12">
+    <text x="50" y="320" text-anchor="middle">-2</text>
+    <text x="100" y="320" text-anchor="middle">-1</text>
+    <text x="150" y="320" text-anchor="middle">0</text>
+    <text x="200" y="320" text-anchor="middle">1</text>
+    <text x="250" y="320" text-anchor="middle">2</text>
+    <text x="300" y="320" text-anchor="middle">3</text>
+    <text x="350" y="320" text-anchor="middle">4</text>
+    <text x="400" y="320" text-anchor="middle">5</text>
+    <text x="250" y="340" text-anchor="middle">x</text>
+
+    <text x="30" y="50" text-anchor="end">0.35</text>
+    <text x="30" y="100" text-anchor="end">0.30</text>
+    <text x="30" y="150" text-anchor="end">0.25</text>
+    <text x="30" y="200" text-anchor="end">0.20</text>
+    <text x="30" y="250" text-anchor="end">0.15</text>
+    <text x="30" y="300" text-anchor="end">0.10</text>
+    <text x="30" y="320" text-anchor="end">0.05</text>
+    <text x="30" y="340" text-anchor="end">0.00</text>
+    <text x="10" y="150" transform="rotate(-90,10,150)">Probability Density</text>
+  </g>
+
+  <!-- 第一个区域：蓝线左侧部分与左边虚线(x=200)和x轴围成的区域 -->
+  <path d="M50,300 
+           C80,300 120,300 150,300 
+           C170,300 190,285 200,229 
+           L200,300 
+           L50,300Z" 
+        fill="#888" fill-opacity="0.3" />
+
+  <!-- 第三个区域：黄线右侧、蓝线左侧和x轴围成的中间区域 -->
+  <path d="M200,193 
+           C215,210 235,240 250,264 
+           C270,285 290,295 300,300 
+           L200,300 
+           L200,193Z" 
+        fill="#888" fill-opacity="0.3" />
+
+  <!-- 黄色曲线 -->
+  <path d="M50,300 
+           C60,295 75,280 100,172 
+           C115,140 135,125 150,136 
+           C165,150 185,175 200,193 
+           C215,210 235,240 250,264 
+           C270,285 290,295 300,300 
+           C350,300 400,300 450,300" 
+        stroke="#fbbc4b" stroke-width="2" fill="none" stroke-linecap="round" />
+
+  <!-- 蓝色曲线 - 完美对称的拱形 -->
+  <path d="M50,300 
+           C80,300 120,300 150,300 
+           C170,300 190,285 200,229 
+           C210,190 222,150 235,121 
+           C248,105 262,105 275,121 
+           C288,150 300,190 310,229 
+           C320,285 340,300 450,300" 
+        stroke="#3182bd" stroke-width="2" fill="none" stroke-linecap="round" />
+
+  <!-- 垂直虚线 - 修改位置 -->
+  <line x1="200" x2="200" y1="50" y2="300" stroke="black" stroke-width="1" stroke-dasharray="5,5" />
+  <line x1="225" x2="225" y1="50" y2="300" stroke="black" stroke-width="1" stroke-dasharray="5,5" />
+
+  <!-- 图例 -->
+  <g transform="translate(350,50)">
+    <rect x="0" y="0" width="10" height="10" fill="#fbbc4b" />
+    <text x="15" y="10" text-anchor="start" font-family="Arial" font-size="12">p(x, y=0)*v(x)</text>
+    <rect x="0" y="20" width="10" height="10" fill="#3182bd" />
+    <text x="15" y="30" text-anchor="start" font-family="Arial" font-size="12">p(x, y=1)*v(x)</text>
+  </g>
+</svg>

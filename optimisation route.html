@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20x20网格连线系统</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .description {
+            color: #546e7a;
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        button {
+            padding: 10px 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .custom-start-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .custom-start-control input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .grid-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            border: 2px solid #7f8c8d;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .cell {
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            box-sizing: border-box;
+            transition: background-color 0.2s;
+        }
+        
+        .cell:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .start-point {
+            background-color: #ffcc80;
+            font-size: 7px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+            z-index: 5;
+            border: 2px solid #ff9800;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #ff9800;
+            padding: 1px;
+        }
+        
+        .connection {
+            position: absolute;
+            background-color: rgba(173, 216, 230, 0.4);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .connection-line {
+            position: absolute;
+            background-color: #2c3e50;
+            height: 2px;
+            z-index: 2;
+            pointer-events: none;
+            transform-origin: 0 50%;
+        }
+        
+        .arrow {
+            position: absolute;
+            color: #2c3e50;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 3;
+            pointer-events: none;
+        }
+        
+        .info-panel {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .info-panel h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            color: #546e7a;
+            line-height: 1.5;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 文本框样式 */
+        .draggable-textbox {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        
+        .draggable-textbox:focus {
+            outline: 2px solid #2980b9;
+            border-color: #2980b9 !important;
+        }
+        
+        .draggable-textbox:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        @media (max-width: 650px) {
+            .grid-container {
+                width: 95vw;
+                height: 95vw;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+                </div>
+        
+        <div class="controls">
+            <button id="resetBtn">重置网格</button>
+            <button id="randomStartBtn">随机起始点</button>
+            <div class="custom-start-control">
+                <span>自定义起始点:</span>
+                <input type="number" id="customStartInput" min="0" max="399" placeholder="0-399">
+                <button id="setStartBtn">设置</button>
+            </div>
+            <button id="addTextboxBtn">添加文本框</button>
+            <button id="clearTextboxesBtn">清除所有文本框</button>
+        </div>
+        
+        <div class="grid-container">
+            <div class="grid" id="grid"></div>
+        </div>
+        
+                   <div class="status" id="status">当前状态: 等待操作</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('grid');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomStartBtn = document.getElementById('randomStartBtn');
+            const setStartBtn = document.getElementById('setStartBtn');
+            const customStartInput = document.getElementById('customStartInput');
+            const status = document.getElementById('status');
+            
+            // 文本框功能变量
+            const addTextboxBtn = document.getElementById('addTextboxBtn');
+            const clearTextboxesBtn = document.getElementById('clearTextboxesBtn');
+            let textboxes = [];
+            
+            let startPoint = null;
+            let lastPoint = null;
+            let connections = [];
+            
+            // 创建20x20网格
+            function createGrid() {
+                grid.innerHTML = '';
+                connections = [];
+                
+                for (let i = 0; i < 400; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.index = i;
+                    
+                    cell.addEventListener('click', handleCellClick);
+                    
+                    grid.appendChild(cell);
+                }
+                
+                // 默认随机选择一个起始点
+                setRandomStartPoint();
+                updateStatus('网格已创建，已设置随机起始点');
+            }
+            
+            // 设置随机起始点
+            function setRandomStartPoint() {
+                // 清除之前的起始点
+                if (startPoint !== null) {
+                    const prevStartCell = grid.children[startPoint];
+                    prevStartCell.classList.remove('start-point');
+                    prevStartCell.innerHTML = '';
+                }
+                
+                // 随机选择新的起始点
+                const randomIndex = Math.floor(Math.random() * 400);
+                startPoint = randomIndex;
+                lastPoint = randomIndex;
+                
+                const startCell = grid.children[randomIndex];
+                startCell.classList.add('start-point');
+                startCell.innerHTML = 'random<br>start';
+                
+                // 清除所有连接
+                document.querySelectorAll('.connection, .connection-line, .arrow').forEach(el => el.remove());
+                
+                updateStatus(`已设置随机起始点: 位置 ${randomIndex}`);
+            }
+            
+            // 设置自定义起始点
+            function setCustomStartPoint() {
+                const index = parseInt(customStartInput.value);
+                
+                if (isNaN(index) || index < 0 || index > 399) {
+                    updateStatus('错误: 请输入0-399之间的有效数字');
+                    return;
+                }
+                
+                // 清除之前的起始点
+                if (startPoint !== null) {
+                    const prevStartCell = grid.children[startPoint];
+                    prevStartCell.classList.remove('start-point');
+                    prevStartCell.innerHTML = '';
+                }
+                
+                startPoint = index;
+                lastPoint = index;
+                
+                const startCell = grid.children[index];
+                startCell.classList.add('start-point');
+                startCell.innerHTML = 'random<br>start';
+                
+                // 清除所有连接
+                document.querySelectorAll('.connection, .connection-line, .arrow').forEach(el => el.remove());
+                
+                updateStatus(`已设置自定义起始点: 位置 ${index}`);
+                customStartInput.value = '';
+            }
+            
+            // 处理单元格点击
+            function handleCellClick(e) {
+                const cell = e.currentTarget;
+                const index = parseInt(cell.dataset.index);
+                
+                // 如果点击的是起始点，不创建连接
+                if (index === startPoint) {
+                    updateStatus('提示: 不能从起始点连接到自身');
+                    return;
+                }
+                
+                // 创建从上一个点到当前点的连接
+                if (lastPoint !== null && lastPoint !== index) {
+                    createConnection(lastPoint, index);
+                    updateStatus(`已创建从位置 ${lastPoint} 到位置 ${index} 的连线`);
+                } else if (lastPoint === index) {
+                    updateStatus('提示: 不能连接到相同的点');
+                    return;
+                }
+                
+                lastPoint = index;
+            }
+            
+            // 创建连接
+            function createConnection(fromIndex, toIndex) {
+                const fromCell = grid.children[fromIndex];
+                const toCell = grid.children[toIndex];
+                
+                const fromRect = fromCell.getBoundingClientRect();
+                const toRect = toCell.getBoundingClientRect();
+                const gridRect = grid.getBoundingClientRect();
+                
+                // 计算连接线的位置和尺寸
+                const fromX = fromRect.left + fromRect.width / 2 - gridRect.left;
+                const fromY = fromRect.top + fromRect.height / 2 - gridRect.top;
+                const toX = toRect.left + toRect.width / 2 - gridRect.left;
+                const toY = toRect.top + toRect.height / 2 - gridRect.top;
+                
+                // 计算连接线的长度和角度
+                const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+                const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+                
+                // 创建连接线背景
+                const connection = document.createElement('div');
+                connection.className = 'connection';
+                connection.style.width = `${length}px`;
+                connection.style.height = '20px';
+                connection.style.left = `${fromX}px`;
+                connection.style.top = `${fromY - 10}px`;
+                connection.style.transform = `rotate(${angle}deg)`;
+                connection.style.transformOrigin = '0 50%';
+                
+                // 创建黑色细线
+                const connectionLine = document.createElement('div');
+                connectionLine.className = 'connection-line';
+                connectionLine.style.width = `${length}px`;
+                connectionLine.style.left = `${fromX}px`;
+                connectionLine.style.top = `${fromY - 1}px`;
+                connectionLine.style.transform = `rotate(${angle}deg)`;
+                connectionLine.style.transformOrigin = '0 50%';
+                
+                // 创建箭头
+                const arrow = document.createElement('div');
+                arrow.className = 'arrow';
+                arrow.innerHTML = '→';
+                arrow.style.left = `${toX - 10}px`;
+                arrow.style.top = `${toY - 10}px`;
+                arrow.style.transform = `rotate(${angle}deg)`;
+                
+                grid.appendChild(connection);
+                grid.appendChild(connectionLine);
+                grid.appendChild(arrow);
+                
+                connections.push({connection, connectionLine, arrow});
+            }
+            
+            // 更新状态信息
+            function updateStatus(message) {
+                status.textContent = `当前状态: ${message}`;
+            }
+            
+            // 添加文本框功能
+            addTextboxBtn.addEventListener('click', function() {
+                const textbox = document.createElement('div');
+                textbox.className = 'draggable-textbox';
+                textbox.contentEditable = true;
+                textbox.style.position = 'absolute';
+                textbox.style.left = '50px';
+                textbox.style.top = '50px';
+                textbox.style.width = '150px';
+                textbox.style.minHeight = '30px';
+                textbox.style.padding = '8px';
+                textbox.style.border = '2px solid #3498db';
+                textbox.style.borderRadius = '4px';
+                textbox.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                textbox.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                textbox.style.zIndex = '10';
+                textbox.style.cursor = 'move';
+                textbox.style.resize = 'both';
+                textbox.style.overflow = 'auto';
+                textbox.textContent = '双击编辑文本';
+                
+                // 添加拖动功能
+                makeElementDraggable(textbox);
+                
+                document.querySelector('.grid-container').appendChild(textbox);
+                textboxes.push(textbox);
+                
+                // 自动聚焦并选中文本
+                setTimeout(() => {
+                    textbox.focus();
+                    const range = document.createRange();
+                    range.selectNodeContents(textbox);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }, 0);
+                
+                updateStatus('已添加文本框，可拖动和编辑');
+            });
+            
+            // 清除所有文本框功能
+            clearTextboxesBtn.addEventListener('click', function() {
+                textboxes.forEach(textbox => {
+                    if (textbox.parentNode) {
+                        textbox.parentNode.removeChild(textbox);
+                    }
+                });
+                textboxes = [];
+                updateStatus('已清除所有文本框');
+            });
+            
+            // 使元素可拖动的函数
+            function makeElementDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                
+                element.onmousedown = dragMouseDown;
+                
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    
+                    // 获取鼠标初始位置
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    document.onmouseup = closeDragElement;
+                    document.onmousemove = elementDrag;
+                }
+                
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    
+                    // 计算新位置
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    // 设置元素新位置
+                    element.style.top = (element.offsetTop - pos2) + "px";
+                    element.style.left = (element.offsetLeft - pos1) + "px";
+                }
+                
+                function closeDragElement() {
+                    // 停止移动
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+            
+            // 重置网格
+            resetBtn.addEventListener('click', function() {
+                createGrid();
+            });
+            
+            // 随机起始点
+            randomStartBtn.addEventListener('click', function() {
+                setRandomStartPoint();
+            });
+            
+            // 设置自定义起始点
+            setStartBtn.addEventListener('click', function() {
+                setCustomStartPoint();
+            });
+            
+            // 按Enter键设置自定义起始点
+            customStartInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    setCustomStartPoint();
+                }
+            });
+            
+            // 初始化网格
+            createGrid();
+        });
+    </script>
+</body>
+</html>
